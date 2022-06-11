@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/drafts/IERC20Permit.sol";
+import "hardhat/console.sol";
 
 
 import "../../interfaces/ISeniorPool.sol";
@@ -62,6 +63,7 @@ contract SeniorPool is BaseUpgradeablePausable, ISeniorPool {
   function deposit(uint256 amount) public override whenNotPaused nonReentrant returns (uint256 depositShares) {
     require(amount > 0, "Must deposit more than zero");
     // Check if the amount of new shares to be added is within limits
+
     depositShares = getNumShares(amount);
     uint256 potentialNewTotalShares = totalShares().add(depositShares);
     require(sharesWithinLimit(potentialNewTotalShares), "Deposit would put the fund over the total limit.");

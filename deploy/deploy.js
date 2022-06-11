@@ -8,22 +8,25 @@ async function main() {
   let accountAddress = await deployAccountLib();
 
   let creditDesk = await deployCreditDesk(goldFinchConfig, accountAddress);
-  await deployFakeUSDC(goldFinchConfig);
+  let testERC20 = await deployFakeUSDC(goldFinchConfig);
   let fixedLeverageRatioStrategy = await deploySeniorPoolStrategy(goldFinchConfig);
   let creditLine = await deployCreditLine(goldFinchConfig, accountAddress);
   await deployFidu(goldFinchConfig);
   let seniorPool = await deploySeniorPool(goldFinchConfig, accountAddress);
   await deployTranchedPoll(goldFinchConfig);
   await deployBorrow(goldFinchConfig);
-  await deployPool(goldFinchConfig);
+  let pool = await deployPool(goldFinchConfig);
   await deployGoldFinFactory(owner, goldFinchConfig);
 
   // await creditDesk.initialize(owner, goldFinchConfig.address);
   // await fixedLeverageRatioStrategy.initialize(owner, goldFinchConfig.address);
 
   // await goldFinchFactory.initialize(owner, goldFinchConfig.address)
+  await pool.initialize(owner, goldFinchConfig.address);
   await seniorPool.initialize(owner, goldFinchConfig.address)
-  await seniorPool.deposit(100);
+
+  testERC20.approve(seniorPool.address, 2*10e6);
+  await seniorPool.deposit(1);
 }
 
 async function deployGoldFinchConfig(owner) {
@@ -61,6 +64,7 @@ async function deployFakeUSDC(goldFinchConfig) {
   await goldFinchConfig.setAddress(5, testERC20.address)
 
   console.log('TestERC20 deployed to ', testERC20.address);
+  return testERC20;
 }
 
 async function deployCreditDesk(goldFinchConfig, accountAddress) {
@@ -161,6 +165,7 @@ async function deployPool(goldFinchConfig) {
   await goldFinchConfig.setAddress(0, pool.address)
 
   console.log('Pool deployed to ', pool.address);
+  return pool;
 }
 
 async function deployGoldFinFactory(){
