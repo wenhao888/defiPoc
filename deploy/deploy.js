@@ -11,22 +11,31 @@ async function main() {
   let testERC20 = await deployFakeUSDC(goldFinchConfig);
   let fixedLeverageRatioStrategy = await deploySeniorPoolStrategy(goldFinchConfig);
   let creditLine = await deployCreditLine(goldFinchConfig, accountAddress);
-  await deployFidu(goldFinchConfig);
+  let fidu = await deployFidu(goldFinchConfig);
   let seniorPool = await deploySeniorPool(goldFinchConfig, accountAddress);
   await deployTranchedPoll(goldFinchConfig);
   await deployBorrow(goldFinchConfig);
   let pool = await deployPool(goldFinchConfig);
   await deployGoldFinFactory(owner, goldFinchConfig);
 
-  // await creditDesk.initialize(owner, goldFinchConfig.address);
-  // await fixedLeverageRatioStrategy.initialize(owner, goldFinchConfig.address);
+  await creditDesk.initialize(owner, goldFinchConfig.address);
+  await fixedLeverageRatioStrategy.initialize(owner, goldFinchConfig.address);
 
   // await goldFinchFactory.initialize(owner, goldFinchConfig.address)
   await pool.initialize(owner, goldFinchConfig.address);
   await seniorPool.initialize(owner, goldFinchConfig.address)
+  await fidu.__initialize__(owner, "fidu", "FD",  goldFinchConfig.address);
 
-  testERC20.approve(seniorPool.address, 2*10e6);
-  await seniorPool.deposit(1);
+  const MINTER_ROLE = web3.utils.keccak256("MINTER_ROLE")
+  fidu.grantRole(MINTER_ROLE, seniorPool.address)
+  await testERC20.approve(seniorPool.address, 1e6);
+  await seniorPool.deposit(1e6);
+
+  var BN = web3.utils.BN;
+  let balance = await fidu.balanceOf(owner);
+  balance = web3.utils.toBN(balance)
+  let tmp  = balance.div(new BN(10).pow(new BN(18))).toString();
+  console.log("tmp", tmp);
 }
 
 async function deployGoldFinchConfig(owner) {
@@ -123,6 +132,7 @@ async function deployFidu(goldFinchConfig) {
   await goldFinchConfig.setAddress(4, fidu.address)
 
   console.log('Fidu deployed to ', fidu.address);
+  return fidu;
 }
 
 async function deploySeniorPool(goldFinchConfig, accountAddress) {

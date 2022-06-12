@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/presets/ERC20PresetMinterPauser.sol";
 import "./ConfigHelper.sol";
+import "hardhat/console.sol";
 
 /**
  * @title Fidu
